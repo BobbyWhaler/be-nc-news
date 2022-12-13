@@ -122,3 +122,47 @@ describe("4. GET /api/articles/:article_id", () => {
     })
   })
 });
+describe("5. GET /api/articles/:article_id/comments", () => {
+  test("200, responds with comments under the specific article", () => {
+    const article_ID = 3;
+    return request(app)
+      .get(`/api/articles/${article_ID}/comments`)
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.comments).toEqual([
+          {
+            comment_id: 11,
+            votes: 0,
+            created_at: "2020-09-19T23:10:00.000Z",
+            author: "icellusedkars",
+            body: "Ambidextrous marsupial",
+          },
+          {
+            comment_id: 10,
+            votes: 0,
+            created_at: "2020-06-20T07:24:00.000Z",
+            author: "icellusedkars",
+            body: "git push origin master",
+          },
+        ]);
+      });
+  });
+  test('404: non-existant route', () => {
+    return request(app)
+    .get('/api/articles/999/comments')
+    .expect(404)
+    .then((response) => {
+      const msg = response.body;
+      expect(msg).toEqual({ message: "Not Found" });
+    });
+  })
+  test('400: Invalid ID', () => {
+    return request(app)
+    .get('/api/articles/notAnID/comments')
+    .expect(400)
+    .then((response) => {
+      const msg = response.body
+      expect(msg).toEqual({ message: "Bad Request" });
+    })
+  })
+});

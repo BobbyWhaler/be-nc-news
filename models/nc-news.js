@@ -13,7 +13,7 @@ exports.selectArticles = () => {
 exports.selectArticleByID = (article_id) => {
     return db
     .query("SELECT * FROM articles WHERE article_id = $1;", [article_id])
-    .then((result) => result.rows[0])
+    .then((articles) => articles.rows[0])
     .then((article) => {
         if (article === undefined) {
           return Promise.reject({
@@ -23,4 +23,18 @@ exports.selectArticleByID = (article_id) => {
             return article
           }
       });
+}
+exports.selectCommentsByArticleID = (article_id) => {
+    return db
+    .query("SELECT comment_id, votes, created_at, author, body FROM comments WHERE article_id = $1 ORDER BY created_at DESC;", [article_id])
+    .then((comments) => comments.rows)
+    .then((comment) => {
+        if (comment.length === 0) {
+            return Promise.reject({
+              status: 404,
+              msg: "Not Found",
+            })} else {
+              return comment
+            }
+    })
 }
