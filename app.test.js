@@ -10,6 +10,18 @@ afterAll(() => {
 
 beforeEach(() => seed(data));
 
+describe('app', () => {
+  test('404: non-existant route', () => {
+    return request(app)
+    .get('/api/headline')
+    .expect(404)
+    .then((response) => {
+      const msg = response.body
+      expect(msg).toEqual({ message: "Not Found" });
+    })
+  })
+})
+
 describe('1. GET /api', () => {
     test('Should respond with a json object containing a "message" key', () => {
         return request(app)
@@ -61,4 +73,52 @@ describe("3. GET /api/articles", () => {
           });
         });
     });
+    test("200: should return the correct amount of comments for each article", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body }) => {
+          const articles = body.articles;
+          expect(articles[0].comment_count).toBe("2");
+          expect(articles[1].comment_count).toBe("1");
+        });
+    });
   });
+
+describe("4. GET /api/articles/:article_id", () => {
+  test("200, responds with a single matching article", () => {
+    const article_ID = 2;
+    return request(app)
+      .get(`/api/articles/${article_ID}`)
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.article).toEqual({
+          article_id: 2,
+          title: "Sony Vaio; or, The Laptop",
+          topic: "mitch",
+          author: "icellusedkars",
+          body: expect.any(String),
+          created_at: "2020-10-16T05:03:00.000Z",
+          votes: 0,
+        });
+      });
+  });
+  test('404: non-existant route', () => {
+    return request(app)
+    .get('/api/articles/999')
+    .expect(404)
+    .then((response) => {
+      const msg = response.body;
+      expect(msg).toEqual({ message: "Not Found" });
+    });
+  })
+  test('400: Invalid ID', () => {
+    return request(app)
+    .get('/api/articles/notAnID')
+    .expect(400)
+    .then((response) => {
+      const msg = response.body
+      expect(msg).toEqual({ message: "Bad Request" });
+    })
+  })
+});

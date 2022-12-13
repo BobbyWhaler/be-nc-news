@@ -1,25 +1,32 @@
 const express = require('express');
-const { getApi, getTopics, getArticles } = require('./controllers/nc-news');
+const { getApi, getTopics, getArticles, getArticleByID } = require('./controllers/nc-news');
 const app = express();
 
 app.get('/api', getApi);
 app.get('/api/topics', getTopics);
 app.get('/api/articles', getArticles);
 
-app.use((err, req, res, next) => {
-  if(err.code === "") {
-    res.status(400).send({ msg: "bad request" });
-  } else {
-    next(err);
-  }
+app.get('/api/articles/:article_id', getArticleByID);
+
+app.all("/*", (req, res) => {
+  res.status(404).send({ message: "Not Found" });
 });
 
 app.use((err, req, res, next) => {
-  if (err.msg !== undefined) {
-    res.status(err.status).send({ msg: err.msg });
-  } else {
-    next(err);
-  }
+	if (err.code === "22P02") {
+		res.status(400).send({ message: "Bad Request" });
+	} else {
+		next(err);
+	}
+});
+
+app.use((err, req, res, next) => {
+	if ("status" in err) {
+		res.status(err.status).send({ message: err.msg });
+		return;
+	} else {
+		next(err);
+	}
 });
 
 app.use((err, req, res, next) => {
