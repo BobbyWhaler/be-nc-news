@@ -1,0 +1,7 @@
+You are now connected to database "nc_news_test" as user "bobwhaler".
+ comment_id | body  | article_id |    author     | votes |         created_at         
+------------+-------+------------+---------------+-------+----------------------------
+         20 | hello |          2 | butter_bridge |     0 | 2022-12-15 14:32:56.937082
+(1 row)
+
+INSERT 0 1

@@ -1,4 +1,4 @@
-const { selectTopics, selectArticles, selectArticleByID, selectCommentsByArticleID } = require('../models/nc-news');
+const { selectTopics, selectArticles, selectArticleByID, selectCommentsByArticleID, insertComments } = require('../models/nc-news');
 
 exports.getApi = (request, response) => {
     response.status(200).send( {message: "all ok"} );
@@ -26,4 +26,12 @@ exports.getCommentsByID = (request, response, next) => {
     selectCommentsByArticleID(article_id)
     .then((comments) => { response.status(200).send({ comments })})
     .catch(next)
+}
+exports.postComment = (request, response, next) => {
+    const body = request.body
+    const { article_id } = request.params
+    insertComments(body, article_id)
+    .then((comment) => {
+        response.status(201).send({ comment })})
+        .catch(next)
 }

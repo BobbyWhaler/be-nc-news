@@ -123,7 +123,7 @@ describe("4. GET /api/articles/:article_id", () => {
   })
 });
 describe("5. GET /api/articles/:article_id/comments", () => {
-  test("200, responds with comments under the specific article", () => {
+  test("200, responds with comments under the specific article in order of most recently created", () => {
     const article_ID = 3;
     return request(app)
       .get(`/api/articles/${article_ID}/comments`)
@@ -147,6 +147,15 @@ describe("5. GET /api/articles/:article_id/comments", () => {
         ]);
       });
   });
+  test("200, responds with empty array if article has no comments", () => {
+    const article_ID = 7;
+    return request(app)
+      .get(`/api/articles/${article_ID}/comments`)
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.comments).toEqual([]);
+      });
+  });
   test('404: non-existant route', () => {
     return request(app)
     .get('/api/articles/999/comments')
@@ -165,4 +174,84 @@ describe("5. GET /api/articles/:article_id/comments", () => {
       expect(msg).toEqual({ message: "Bad Request" });
     })
   })
+});
+describe('6. POST /api/articles/:article_id/comments', () => {
+  test('status:201, responds with a comment newly added to the database', () => {
+    const newComment = {
+      username: 'butter_bridge',
+      body: "rich flex",
+    };
+    const article_ID = 3
+    return request(app)
+      .post(`/api/articles/${article_ID}/comments`)
+      .send(newComment, article_ID)
+      .expect(201)
+      .then((response) => {
+        expect(response.body.comment).toEqual({
+          comment_id: 19,
+          body: 'rich flex',
+          article_id: 3,
+          author: 'butter_bridge',
+          votes: 0,
+          created_at: expect.any(String)
+        });
+      });
+  });
+  test('status:404, non-existant article', () => {
+    const requestBody = { username: "butter_bridge", body: "BUTTER"};
+    return request(app)
+    .post('/api/articles/999/comments')
+    .send (requestBody, 999)
+    .expect(404)
+    .then((response) => {
+      const msg = response.body;
+      expect(msg).toEqual({ message: "Not Found" });
+    });
+  });
+test("status:404 should respond with a status 404 and error message Not Found when sent an object with correct properties but username does not exist", () => {
+  const requestBody = {username: "ham", body: "chowder"};
+  const article_ID = 2;
+  return request(app)
+  .post(`/api/articles/${article_ID}/comments`)
+  .send(requestBody, article_ID)
+    .expect(404)
+    .then((response) => {
+      const body = response.body;
+      expect(body).toEqual({ message: "Not Found" });
+    });
+})
+it("status:400, responds with an appropriate error message when the user sends a comment object with incorrect data types", () => {
+  const requestBody = {
+    username: "butter_bridge",
+    body: { spark: 343 },
+  };
+  return request(app)
+    .post("/api/articles/2/comments")
+    .send(requestBody)
+    .expect(400)
+    .then((response) => {
+      const body = response.body;
+      expect(body).toEqual({ message: "Bad Request" });
+    });
+});
+it("should respond with a status 400 and error message Bad Request when sent a object with a malformed body", () => {
+  const requestBody = {};
+  return request(app)
+    .post("/api/articles/7/comments")
+    .send(requestBody)
+    .expect(400)
+    .then((response) => {
+      const body = response.body;
+      expect(body).toEqual({ message: "Bad Request" });
+    });
+});
+it("should return a 400 Bad Request error when endpoint provided an id that is the wrong data type", () => {
+  return request(app)
+    .post("/api/articles/bosh/comments")
+    .expect(400)
+    .then((response) => {
+      const body = response.body;
+      expect(body).toEqual({ message: "Bad Request" });
+    });
+});
 });
