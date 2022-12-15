@@ -1,4 +1,4 @@
-const { selectTopics, selectArticles, selectArticleByID, selectCommentsByArticleID, insertComments, updateArticleByID } = require('../models/nc-news');
+const { selectTopics, selectArticles, selectArticleByID, selectCommentsByArticleID, insertComments, updateArticleByID, selectUsers } = require('../models/nc-news');
 
 exports.getApi = (request, response) => {
     response.status(200).send( {message: "all ok"} );
@@ -42,4 +42,10 @@ exports.patchArticleByID = (request, response, next) => {
     .then((article) => {
         response.status(200).send({ article })})
     .catch(next)
+}
+exports.getUsers = (request, response) => {
+    selectUsers()
+    .then((users) => {
+        response.status(200).send( {users} );
+    });
 }

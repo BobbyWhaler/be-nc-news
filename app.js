@@ -7,6 +7,7 @@ const {
   getCommentsByID,
   postComment,
   patchArticleByID,
+  getUsers,
 } = require("./controllers/nc-news");
 const app = express();
 app.use(express.json());
@@ -15,6 +16,7 @@ require("dotenv").config();
 app.get("/api", getApi);
 app.get("/api/topics", getTopics);
 app.get("/api/articles", getArticles);
+app.get("/api/users", getUsers);
 
 app.get("/api/articles/:article_id", getArticleByID);
 app.get("/api/articles/:article_id/comments", getCommentsByID);

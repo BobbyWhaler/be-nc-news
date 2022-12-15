@@ -98,3 +98,6 @@ exports.updateArticleByID = (voteUpdates, article_id) => {
       }
     });
 };
+exports.selectUsers = () => {
+  return db.query("SELECT * FROM users;").then(({ rows }) => rows);
+}

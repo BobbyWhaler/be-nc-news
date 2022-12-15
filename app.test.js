@@ -34,6 +34,7 @@ describe("2. GET /api", () => {
       });
   });
 });
+
 describe("3. GET /api/topics", () => {
   test("status:200, Should respond with an array of topics objects each with the properties of slug and description.", () => {
     return request(app)
@@ -51,6 +52,7 @@ describe("3. GET /api/topics", () => {
       });
   });
 });
+
 describe("4. GET /api/articles", () => {
   test("status:200, Should respond with an array of article objects each with the properties of author, title, article_id, topic, created_at, votes and comment_count.", () => {
     return request(app)
@@ -122,6 +124,7 @@ describe("5. GET /api/articles/:article_id", () => {
       });
   });
 });
+
 describe("6. GET /api/articles/:article_id/comments", () => {
   test("status:200, responds with comments under the specific article in order of most recently created", () => {
     const article_ID = 3;
@@ -175,6 +178,7 @@ describe("6. GET /api/articles/:article_id/comments", () => {
       });
   });
 });
+
 describe("7. POST /api/articles/:article_id/comments", () => {
   test("status:201, responds with a comment newly added to the database", () => {
     const newComment = {
@@ -255,7 +259,8 @@ describe("7. POST /api/articles/:article_id/comments", () => {
       });
   });
 });
-describe.only("8. PATCH /api/articles/:article_id", () => {
+
+describe("8. PATCH /api/articles/:article_id", () => {
   test("status:200, responds with the updated article", () => {
     const voteUpdates = { inc_votes: 50 };
     return request(app)
@@ -317,6 +322,25 @@ describe.only("8. PATCH /api/articles/:article_id", () => {
       .then((response) => {
         const body = response.body;
         expect(body).toEqual({ message: "Bad Request" });
+      });
+  });
+});
+
+describe.only("9. GET /api/users", () => {
+  test("status:200, Should respond with an array of user objects each with the properties of username, name and avatar_url.", () => {
+    return request(app)
+      .get("/api/users")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body).toBeInstanceOf(Object);
+        expect(body.users).toHaveLength(4);
+        body.users.forEach((user) => {
+          expect(user).toEqual({
+            username: expect.any(String),
+            name: expect.any(String),
+            avatar_url: expect.any(String)
+          });
+        });
       });
   });
 });
