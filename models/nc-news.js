@@ -54,7 +54,6 @@ exports.selectCommentsByArticleID = (article_id) => {
 };
 exports.insertComments = (newComment, article_id) => {
   const { username, body } = newComment;
-
   return db
     .query(
       "INSERT INTO comments (article_id, author, body) VALUES ($1, $2, $3) RETURNING *;",
@@ -68,5 +67,34 @@ exports.insertComments = (newComment, article_id) => {
         });
       }
       return rows[0];
+    });
+};
+exports.updateArticleByID = (voteUpdates, article_id) => {
+  const { inc_votes } = voteUpdates;
+  return db
+    .query("SELECT * FROM articles WHERE article_id = $1;", [article_id])
+    .then((articles) => articles.rows[0])
+    .then((article) => {
+      if (article === undefined) {
+        return Promise.reject({
+          status: 404,
+          msg: "Not Found",
+        });
+      } else {
+        return db
+          .query(
+            "UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *;",
+            [inc_votes, article_id]
+          )
+          .then(({ rows }) => {
+            if (typeof inc_votes !== "number") {
+              return Promise.reject({
+                status: 400,
+                msg: "Bad Request",
+              });
+            }
+            return rows[0];
+          });
+      }
     });
 };
