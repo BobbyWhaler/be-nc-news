@@ -196,14 +196,15 @@ test("status:200, should return the correct amount of comments for each article"
     });
 });
 
-describe("5. GET /api/articles/:article_id", () => {
+describe("5/11. GET /api/articles/:article_id", () => {
   test("status:200, responds with a single matching article", () => {
     const article_ID = 2;
     return request(app)
       .get(`/api/articles/${article_ID}`)
       .expect(200)
       .then(({ body }) => {
-        expect(body.article).toEqual({
+        expect(body.article).toEqual(
+          expect.objectContaining({
           article_id: 2,
           title: "Sony Vaio; or, The Laptop",
           topic: "mitch",
@@ -211,7 +212,8 @@ describe("5. GET /api/articles/:article_id", () => {
           body: expect.any(String),
           created_at: "2020-10-16T05:03:00.000Z",
           votes: 0,
-        });
+          comment_count: '0'
+        }));
       });
   });
   test("status:404, non-existant route", () => {
