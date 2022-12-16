@@ -35,11 +35,14 @@ app.use((err, req, res, next) => {
     res.status(404).send({ message: "Not Found" });
   } else if (err.code === "23502") {
     res.status(400).send({ message: "Bad Request" });
+  } else if (err.code === "42703") {
+    res.status(400).send({ message: "Invalid sort_by query" });
+  } else if (err.code === "42601") {
+    res.status(400).send({ message: "Invalid order query" });
   } else {
     next(err);
   }
 });
-
 app.use((err, req, res, next) => {
   if ("status" in err) {
     res.status(err.status).send({ message: err.msg });
@@ -51,6 +54,7 @@ app.use((err, req, res, next) => {
 
 app.use((err, req, res, next) => {
   console.log(err);
+  console.log(err.code)
   res.status(500).send("Server Error!");
 });
 

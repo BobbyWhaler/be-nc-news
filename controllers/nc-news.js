@@ -9,12 +9,14 @@ exports.getTopics = (request, response) => {
         response.status(200).send( {topics} );
     });
 };
-exports.getArticles = (request, response) => {
-    selectArticles()
+exports.getArticles = (request, response, next) => {
+    selectArticles(request.query)
     .then((articles) => {
         response.status(200).send( {articles} );
-    });
+    })
+    .catch(next);
 };
+
 exports.getArticleByID = (request, response, next) => {
     const { article_id } = request.params;
     selectArticleByID(article_id)
