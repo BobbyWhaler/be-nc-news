@@ -3,13 +3,60 @@ const db = require("../db/connection.js");
 exports.selectTopics = () => {
   return db.query("SELECT * FROM topics;").then(({ rows }) => rows);
 };
-exports.selectArticles = () => {
-  return db
-    .query(
-      "SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, COUNT(comments.article_id) AS comment_count FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id GROUP BY articles.article_id ORDER BY created_at DESC;"
-    )
-    .then(({ rows }) => rows);
+
+exports.selectArticles = (query) => {
+  let queryStr =
+    "SELECT articles.*, COUNT(comments.article_id) AS comment_count FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id GROUP BY articles.article_id ORDER BY created_at DESC;";
+
+  if (query.hasOwnProperty("topic")) {
+    return db
+      .query("SELECT slug FROM topics;")
+      .then(({ rows }) => {
+        const slugArr = [];
+        rows.forEach((topic) => slugArr.push(topic.slug));
+        if (!slugArr.includes(query.topic)) {
+          return Promise.reject({
+            status: 404,
+            msg: "Topic Not Found",
+          });
+        }
+        return undefined;
+      })
+      .then(() => {
+        return db.query(
+          "SELECT articles.*, COUNT(comments.article_id) AS comment_count FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id WHERE articles.topic = $1 GROUP BY articles.article_id ORDER BY created_at DESC;",
+          [query.topic]
+        );
+      })
+      .then(({ rows }) => rows);
+  } else if (query.hasOwnProperty("sort_by") && query.sort_by !== "") {
+    let sortBy = "";
+    if (
+      query.sort_by === "article_id" ||
+      query.sort_by === "title" ||
+      query.sort_by === "topic" ||
+      query.sort_by === "body"
+    ) {
+      sortBy = "ASC";
+    } else {
+      sortBy = "DESC";
+    }
+    return db
+      .query(
+        `SELECT articles.*, COUNT(comments.article_id) AS comment_count FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id GROUP BY articles.article_id ORDER BY ${query.sort_by} ${sortBy};`
+      )
+      .then(({ rows }) => rows);
+  } else if (query.hasOwnProperty("order") && query.order !== "") {
+    return db
+      .query(
+        `SELECT articles.*, COUNT(comments.article_id) AS comment_count FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id GROUP BY articles.article_id ORDER BY created_at ${query.order.toUpperCase()};`
+      )
+      .then(({ rows }) => rows);
+  } else {
+    return db.query(queryStr).then(({ rows }) => rows);
+  }
 };
+
 exports.selectArticleByID = (article_id) => {
   return db
     .query("SELECT * FROM articles WHERE article_id = $1;", [article_id])
